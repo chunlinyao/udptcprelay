@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 
 public class UDPServer implements RemovalListener<InetSocketAddress, Integer> {
@@ -42,7 +41,7 @@ public class UDPServer implements RemovalListener<InetSocketAddress, Integer> {
         return channelFuture;
     }
 
-    public void start() throws Exception {
+    public void start() {
         Bootstrap b = new Bootstrap();
         b.group(group)
                 .channel(NioDatagramChannel.class)
@@ -80,12 +79,14 @@ public class UDPServer implements RemovalListener<InetSocketAddress, Integer> {
         int sessionId = msg.getSessionId();
         InetSocketAddress sender = senderAddressMap.get(sessionId);
         if (sender != null) {
-            outboundChannel.writeAndFlush(new DatagramPacket(msg.getData(), sender));
+            outboundChannel.writeAndFlush(new DatagramPacket(msg.content(), sender));
+        } else {
+            msg.release();
         }
     }
 
     @Override
     public void onRemoval(RemovalNotification<InetSocketAddress, Integer> notification) {
-       senderAddressMap.remove(notification.getValue());
+        senderAddressMap.remove(notification.getValue());
     }
 }

@@ -52,7 +52,7 @@ public final class TCPServer {
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.INFO))
+                .handler(new LoggingHandler(LogLevel.DEBUG))
                 .childHandler(new TCPServerInitializer(this))
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_REUSEADDR, true)
@@ -75,7 +75,7 @@ public final class TCPServer {
         if (ctx != null) {
             ctx.writeAndFlush(myFrame);
         } else {
-            ReferenceCountUtil.release(myFrame.getData());
+            myFrame.release();
         }
     }
 
@@ -84,9 +84,9 @@ public final class TCPServer {
         ChannelHandlerContext first = tmp;
         while (tmp != null && tmp.channel().isActive() == false) {
             tmp = roundRobin.get();
-        }
-        if (tmp == first) {
-            return null;
+            if (tmp == first) {
+                return null;
+            }
         }
         return tmp;
     }

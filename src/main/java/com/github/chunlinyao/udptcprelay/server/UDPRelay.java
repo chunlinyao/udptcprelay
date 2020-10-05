@@ -49,7 +49,7 @@ public class UDPRelay {
     }
 
     public void tcpToUdp(MyFrame msg) {
-        outboundChannel.writeAndFlush(msg.getData());
+        outboundChannel.writeAndFlush(msg.content());
     }
 
     public void invalidate() {

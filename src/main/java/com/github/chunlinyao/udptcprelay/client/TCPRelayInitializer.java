@@ -26,7 +26,7 @@ public class TCPRelayInitializer extends ChannelInitializer<SocketChannel> {
         ChannelPipeline pipeline = ch.pipeline();
         ch.config().setTrafficClass(152);
         // Add the number codec first,
-        pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+        pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
         pipeline.addLast(new LengthFieldBasedFrameDecoder(64 * 1024, 0, 2, 0, 2));
         pipeline.addLast(new FrameDecoder());
         pipeline.addLast(new LengthFieldPrepender(2));

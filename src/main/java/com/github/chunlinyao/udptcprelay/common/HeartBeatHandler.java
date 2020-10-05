@@ -6,7 +6,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.CharsetUtil;
 
@@ -16,17 +15,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
     private static final ByteBuf HEARTBEAT_SEQUENCE = Unpooled.unreleasableBuffer(Unpooled.copiedBuffer("HEARTBEAT", CharsetUtil.ISO_8859_1));
     private final AtomicInteger reqRespDiff = new AtomicInteger(0);
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof MyFrame) {
             MyFrame frame = (MyFrame) msg;
             if (frame.getSessionId() == MyFrame.HEARTBEAT_RESP_SESSIONID) {
-                reqRespDiff.set(0);
-                return;
+                try {
+                    reqRespDiff.set(0);
+                    return;
+                } finally {
+                    frame.release();
+                }
             } else if (frame.getSessionId() == MyFrame.HEARTBEAT_REQ_SESSIONID) {
-                ctx.writeAndFlush(new MyFrame(MyFrame.HEARTBEAT_RESP_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
-                        ChannelFutureListener.CLOSE_ON_FAILURE);
-                return;
+                try {
+                    ctx.writeAndFlush(new MyFrame(MyFrame.HEARTBEAT_RESP_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
+                            ChannelFutureListener.CLOSE_ON_FAILURE);
+                    return;
+                } finally {
+                    frame.release();
+                }
             }
         }
         super.channelRead(ctx, msg);
@@ -41,8 +49,8 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
             IdleStateEvent idleEvent = (IdleStateEvent) evt;
-                ctx.writeAndFlush(new MyFrame(MyFrame.HEARTBEAT_REQ_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
-                        ChannelFutureListener.CLOSE_ON_FAILURE);
+            ctx.writeAndFlush(new MyFrame(MyFrame.HEARTBEAT_REQ_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
+                    ChannelFutureListener.CLOSE_ON_FAILURE);
 
         } else {
             super.userEventTriggered(ctx, evt);

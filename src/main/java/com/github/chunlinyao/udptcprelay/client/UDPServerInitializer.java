@@ -37,7 +37,7 @@ public class UDPServerInitializer extends ChannelInitializer<DatagramChannel> {
     public void initChannel(DatagramChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
 
-        pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+        pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
         pipeline.addLast(new UDPServerHandler(udpServer));
     }
 }

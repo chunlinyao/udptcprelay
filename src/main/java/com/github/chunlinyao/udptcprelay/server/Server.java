@@ -20,12 +20,16 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Server implements RemovalListener<Integer, UDPRelay> {
 
@@ -70,10 +74,12 @@ public final class Server implements RemovalListener<Integer, UDPRelay> {
                 tmp.start();
                 return tmp;
             });
-            udpRelay.getChannelFuture().awaitUninterruptibly();
-            udpRelay.tcpToUdp(msg);
+            //FIXME why lost first packet when create new UDPRelay.
+            udpRelay.tcpToUdp(msg.retain());
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } finally {
+            msg.release();
         }
     }
 

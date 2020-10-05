@@ -37,7 +37,7 @@ public class UDPRelayInitializer extends ChannelInitializer<DatagramChannel> {
         ChannelPipeline pipeline = ch.pipeline();
 
         // Add the number codec first,
-        pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+        pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
         // and then business logic.
         // Please note we create a handler for every new channel
         // because it has stateful properties.

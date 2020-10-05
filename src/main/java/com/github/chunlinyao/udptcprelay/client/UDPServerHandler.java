@@ -44,7 +44,4 @@ public class UDPServerHandler extends SimpleChannelInboundHandler<DatagramPacket
         cause.printStackTrace();
     }
 
-    public void writeAndFlush(DatagramPacket datagramPacket) {
-        udpContext.writeAndFlush(datagramPacket);
-    }
 }

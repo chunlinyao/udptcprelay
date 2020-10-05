@@ -30,7 +30,7 @@ public class FrameEncoder extends MessageToMessageEncoder<MyFrame> {
     @Override
     protected void encode(ChannelHandlerContext ctx, MyFrame msg, List<Object> out) throws Exception {
         ByteBuf frame = ctx.alloc().buffer(1).writeShort(msg.getSessionId());
-        frame.writeBytes(msg.getData());
+        frame.writeBytes(msg.content());
         out.add(frame);
     }
 }

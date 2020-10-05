@@ -45,7 +45,11 @@ public class Client {
 
     public void udpToTcp(MyFrame myFrame) {
         TCPRelay tcpRelay = nextActiveTcpRelay();
-        tcpRelay.udpToTcp(myFrame);
+        if (tcpRelay != null) {
+            tcpRelay.udpToTcp(myFrame);
+        } else {
+            myFrame.release();
+        }
     }
 
     private TCPRelay nextActiveTcpRelay() {
