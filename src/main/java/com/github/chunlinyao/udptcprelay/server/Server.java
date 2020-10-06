@@ -35,12 +35,13 @@ public final class Server implements RemovalListener<Integer, UDPRelay> {
 
 
     static final String REMOTE_HOST = System.getProperty("remoteHost", "127.0.0.1");
-    static final int REMOTE_PORT = Integer.parseInt(System.getProperty("remotePort", "7696"));
+    static final int REMOTE_PORT = Integer.parseInt(System.getProperty("remotePort", "1002"));
     private static final int PORT = Integer.parseInt(System.getProperty("port", "7666"));
     private final Cache<Integer, UDPRelay> sessionRelayCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.HOURS).removalListener(this).build();
     private TCPServer tcpServer;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+    private ThreadLocal<UDPRelay> udpRelay = new ThreadLocal<>();
 
     public static void main(String[] args) throws Exception {
         new Server().start();
@@ -69,13 +70,13 @@ public final class Server implements RemovalListener<Integer, UDPRelay> {
     public void tcpToUdp(MyFrame msg) {
         final int sessionId = msg.getSessionId();
         try {
-            UDPRelay udpRelay = sessionRelayCache.get(sessionId, () -> {
+            udpRelay.set(sessionRelayCache.get(sessionId, () -> {
                 UDPRelay tmp = new UDPRelay(Server.this, workerGroup, REMOTE_HOST, REMOTE_PORT, sessionId);
                 tmp.start();
                 return tmp;
-            });
+            }));
             //FIXME why lost first packet when create new UDPRelay.
-            udpRelay.tcpToUdp(msg.retain());
+            udpRelay.get().tcpToUdp(msg.retain());
         } catch (ExecutionException e) {
             e.printStackTrace();
         } finally {
@@ -97,5 +98,16 @@ public final class Server implements RemovalListener<Integer, UDPRelay> {
 
     public void invalidate(int sessionId) {
         sessionRelayCache.invalidate(sessionId);
+    }
+
+    public void udpToTcpFlush() {
+        tcpServer.udpToTcpFlush();
+    }
+
+    public void nextActiveTcpChannel() {
+       tcpServer.nextActiveChannel();
+    }
+    public void tcpToUdpFlush() {
+        udpRelay.get().tcpToUdpFlush();
     }
 }

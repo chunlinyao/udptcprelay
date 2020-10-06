@@ -41,7 +41,7 @@ public class TCPServerInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline pipeline = ch.pipeline();
-        ch.config().setTrafficClass(152);
+//        ch.config().setTrafficClass(152);
 
         // Add the number codec first,
         pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));

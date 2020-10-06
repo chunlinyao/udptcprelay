@@ -40,6 +40,12 @@ public class UDPServerHandler extends SimpleChannelInboundHandler<DatagramPacket
     }
 
     @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        udpServer.udpToTcpFlush();
+        udpServer.nextActiveTcpRelay();
+        super.channelReadComplete(ctx);
+    }
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
     }

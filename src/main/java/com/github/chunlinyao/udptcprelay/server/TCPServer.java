@@ -39,6 +39,7 @@ public final class TCPServer {
     private final CopyOnWriteArrayList<ChannelHandlerContext> tcpChannels = new CopyOnWriteArrayList<>();
     private final RoundRobin<ChannelHandlerContext> roundRobin = new RoundRobin<>(tcpChannels, ChannelHandlerContext.class);
     private ChannelFuture channelFuture;
+    private ThreadLocal<ChannelHandlerContext> tcpCtx = new ThreadLocal<>();
 
     public TCPServer(Server server, EventLoopGroup bossGroup, EventLoopGroup workerGroup, int port) {
         this.server = server;
@@ -56,8 +57,8 @@ public final class TCPServer {
                 .childHandler(new TCPServerInitializer(this))
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_REUSEADDR, true)
-                .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.IP_TOS, 152);
+//                .childOption(ChannelOption.IP_TOS, 152)
+                ;
 
         channelFuture = b.bind(port);
     }
@@ -71,24 +72,27 @@ public final class TCPServer {
     }
 
     public void udpToTcp(MyFrame myFrame) {
-        ChannelHandlerContext ctx = nextActiveChannel();
-        if (ctx != null) {
-            ctx.writeAndFlush(myFrame);
+        if (tcpCtx.get() == null) {
+
+            nextActiveChannel();
+        }
+        if (tcpCtx.get() != null) {
+            tcpCtx.get().write(myFrame);
         } else {
             myFrame.release();
         }
     }
 
-    private ChannelHandlerContext nextActiveChannel() {
+    public void nextActiveChannel() {
         ChannelHandlerContext tmp = roundRobin.get();
         ChannelHandlerContext first = tmp;
         while (tmp != null && tmp.channel().isActive() == false) {
             tmp = roundRobin.get();
             if (tmp == first) {
-                return null;
+                tcpCtx.set(null);
             }
         }
-        return tmp;
+        tcpCtx.set(tmp);
     }
 
     public void addChannel(ChannelHandlerContext ctx) {
@@ -97,5 +101,13 @@ public final class TCPServer {
 
     public void removeChannel(ChannelHandlerContext ctx) {
         tcpChannels.remove(ctx);
+    }
+
+    public void tcpToUdpFlush() {
+        server.tcpToUdpFlush();
+    }
+
+    public void udpToTcpFlush() {
+        tcpCtx.get().flush();
     }
 }

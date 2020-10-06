@@ -34,6 +34,11 @@ public class TCPRelayHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, Object msg) {
         relay.tcpToUdp((MyFrame) msg);
     }
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        relay.tcpToUdpFlush();
+        super.channelReadComplete(ctx);
+    }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {

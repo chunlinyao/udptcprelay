@@ -29,7 +29,7 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 }
             } else if (frame.getSessionId() == MyFrame.HEARTBEAT_REQ_SESSIONID) {
                 try {
-                    ctx.writeAndFlush(new MyFrame(MyFrame.HEARTBEAT_RESP_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
+                    ctx.write(new MyFrame(MyFrame.HEARTBEAT_RESP_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
                             ChannelFutureListener.CLOSE_ON_FAILURE);
                     return;
                 } finally {
@@ -38,6 +38,11 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
             }
         }
         super.channelRead(ctx, msg);
+    }
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        ctx.flush();
+        super.channelReadComplete(ctx);
     }
 
     @Override
@@ -49,7 +54,7 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
             IdleStateEvent idleEvent = (IdleStateEvent) evt;
-            ctx.writeAndFlush(new MyFrame(MyFrame.HEARTBEAT_REQ_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
+            ctx.write(new MyFrame(MyFrame.HEARTBEAT_REQ_SESSIONID, HEARTBEAT_SEQUENCE.duplicate())).addListener(
                     ChannelFutureListener.CLOSE_ON_FAILURE);
 
         } else {

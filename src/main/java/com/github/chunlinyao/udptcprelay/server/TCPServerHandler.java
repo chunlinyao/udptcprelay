@@ -36,7 +36,7 @@ public class TCPServerHandler extends ChannelInboundHandlerAdapter {
      */
     static void closeOnFlush(Channel ch) {
         if (ch.isActive()) {
-            ch.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            ch.write(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
@@ -50,6 +50,11 @@ public class TCPServerHandler extends ChannelInboundHandlerAdapter {
         tcpServer.tcpToUdp((MyFrame) msg);
     }
 
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        tcpServer.tcpToUdpFlush();
+        super.channelReadComplete(ctx);
+    }
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         tcpServer.removeChannel(ctx);

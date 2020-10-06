@@ -36,8 +36,7 @@ public class TCPRelay {
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_REUSEADDR, true)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.IP_TOS, 152)
+//                .option(ChannelOption.IP_TOS, 152)
                 .handler(new TCPRelayInitializer(this));
         connect();
     }
@@ -49,7 +48,7 @@ public class TCPRelay {
 
 
     public void udpToTcp(MyFrame myFrame) {
-        outboundChannel.writeAndFlush(myFrame);
+        outboundChannel.write(myFrame);
     }
 
     public void tcpToUdp(MyFrame msg) {
@@ -58,5 +57,13 @@ public class TCPRelay {
 
     public boolean isActive() {
         return outboundChannel.isActive();
+    }
+
+    public void udpToTcpFlush() {
+        outboundChannel.flush();
+    }
+
+    public void tcpToUdpFlush() {
+        client.tcpToUdpFlush();
     }
 }

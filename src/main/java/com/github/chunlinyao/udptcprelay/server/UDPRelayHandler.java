@@ -38,4 +38,11 @@ public class UDPRelayHandler extends SimpleChannelInboundHandler<DatagramPacket>
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
         udpRelay.udpToTcp(msg);
     }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        udpRelay.udpToTcpFlush();
+        udpRelay.nextActiveTcpChannel();
+        super.channelReadComplete(ctx);
+    }
 }

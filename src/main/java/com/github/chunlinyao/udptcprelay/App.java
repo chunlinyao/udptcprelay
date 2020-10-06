@@ -32,10 +32,12 @@ public class App {
         if (firstArg.endsWith("help") || "-?".equals(firstArg)) {
             System.out.println("Usage:");
             System.out.println("    -c for client;");
+            System.out.println("        conn=5 for 5 connections;");
             System.out.println("    -s for server;");
         }
         if (argMap.containsKey("c")) {
-            startClient();
+            int connections = Integer.valueOf(argMap.getOrDefault("conn", "5"));
+            startClient(connections);
         } else if (argMap.containsKey("s")) {
             startServer();
         }
@@ -45,8 +47,8 @@ public class App {
         new Server().start();
     }
 
-    private static void startClient() throws Exception {
-        new Client().start();
+    private static void startClient(int connections) throws Exception {
+        new Client(connections).start();
     }
 
 }

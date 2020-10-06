@@ -79,7 +79,7 @@ public class UDPServer implements RemovalListener<InetSocketAddress, Integer> {
         int sessionId = msg.getSessionId();
         InetSocketAddress sender = senderAddressMap.get(sessionId);
         if (sender != null) {
-            outboundChannel.writeAndFlush(new DatagramPacket(msg.content(), sender));
+            outboundChannel.write(new DatagramPacket(msg.content(), sender));
         } else {
             msg.release();
         }
@@ -88,5 +88,17 @@ public class UDPServer implements RemovalListener<InetSocketAddress, Integer> {
     @Override
     public void onRemoval(RemovalNotification<InetSocketAddress, Integer> notification) {
         senderAddressMap.remove(notification.getValue());
+    }
+
+    public void udpToTcpFlush() {
+        client.udpToTcpFlush();
+    }
+
+    public void nextActiveTcpRelay() {
+        client.nextActiveTcpRelay();
+    }
+
+    public void tcpToUdpFlush() {
+        outboundChannel.flush();
     }
 }

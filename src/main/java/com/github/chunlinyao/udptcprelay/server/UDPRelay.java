@@ -49,10 +49,21 @@ public class UDPRelay {
     }
 
     public void tcpToUdp(MyFrame msg) {
-        outboundChannel.writeAndFlush(msg.content());
+        outboundChannel.write(msg.content());
     }
 
     public void invalidate() {
         server.invalidate(sessionId);
+    }
+
+    public void udpToTcpFlush() {
+        server.udpToTcpFlush();
+    }
+
+    public void nextActiveTcpChannel() {
+        server.nextActiveTcpChannel();
+    }
+    public void tcpToUdpFlush() {
+        outboundChannel.flush();
     }
 }
